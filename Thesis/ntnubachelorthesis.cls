@@ -61,7 +61,7 @@
 \setlist[itemize,3]{label=$\cdot$}
 %\RequirePackage[absolute]{textpos}
 
-
+\usepackage{ tipa }
 
 %% MAIN PART
 
@@ -483,7 +483,6 @@ Use $\backslash$useyear\{<year>\} to set year.
   }
 
 \ProcessOptions\relax
-
 
 
 
