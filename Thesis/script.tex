@@ -1,0 +1,25 @@
+\chapter{Script for automasjon og andre oppgaver}
+\label{chap:script}
+\lstset{language=bash}
+
+For å få Zabbix til å sende en SMS via et REST API til clxcommunication.com må dette scriptet brukes. 
+\begin{lstlisting}
+#!/bin/bash
+
+TOKEN=$1
+FROM=$2
+TO=$3
+MESSAGE=$4
+SERVICE=$5
+
+#Send til API hos clxcomm
+
+DATA="$( printf '{"from": "%s","to": ["%s"],"body": "%s"}' "$2" "$3" "$4" )"
+
+curl -X POST \
+         -H "Authorization: Bearer $TOKEN" \
+         -H "Content-Type: application/json" \
+         -d "$DATA" "https://api.clxcommunications.com/xms/v1/$SERVICE/batches"
+
+\end{lstlisting}
+    
