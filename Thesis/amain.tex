@@ -7,12 +7,15 @@
 %%  ``BIS'' Bachelor i Informasjonssikkerhet,\\
 %%  ``BPU'' Bachelor i Programvareutvikling, \\
 %%  ``BIND'' Bachelor i Ingeni�rfad - data. 
-\documentclass[BRD,norsk,oneside]{ntnubachelorthesis}
+\documentclass[BRD,norsk,oneside]{other/ntnubachelorthesis}
 
 \usepackage{csvsimple}
 \usepackage{booktabs}
+%\usepackage[english,nynorsk]{babel}
+\usepackage[toc]{glossaries}
+%\usepackage[acronym,nomain]{glossaries}
 
-\newcommand{\comment}[1]{\textcolor{blue}{\emph{#1}}}  %% use of the colour and you can see how to use commands with parts \comment{so what}
+%\newcommand{\comment}[1]{\textcolor{blue}{\emph{#1}}}  %% use of the colour and you can see how to use commands with parts \comment{so what}
 
 %% The class files defines these two
 %% \newcommand{\NTNU}{Norwegian University for Science and Technology} %
@@ -41,43 +44,51 @@
 %                        eg, NTNU i Gj\o vik  or NTNU i Gj\o{}vik
 
 
+%\selectlanguage{english}
 
+%\selectlanguage{bokmal}
 
-
+\makeglossaries
 \begin{document}
+%\input{akronymer}
 
-\input{BachelorThesisData} % this is the file which contains all the details about your thesis
+\input{tex/themonman} % this is the file which contains all the details about your thesis
 
 \makefrontpages % make the frontpages
-
-\input{bachelorIntro}
+\input{tex/intro}
 
 
 \tableofcontents
-\listoffigures
-\listoftables
+%\listoffigures
+%\listoftables
+\printglossaries
 
 
-\input{introduction}
+
+\input{tex/introduksjon}
 %\input{requirements}
 %\input{technical}
 %\input{process}
 %\input{implementation}
 %\input{deployment}
 %\input{testing}
-\input{script}
+\input{tex/script}
 %\input{discussion}
 %\input{conclusion}
-\input{midlertidigskriv}
+\input{tex/midlertidigskriv}
 
-\bibliographystyle{ntnubachelorthesis}
-\bibliography{BachelorExample}
+\bibliographystyle{other/bibliografistil}
+\bibliography{bibliografi}
+
+
+
 
 \appendix %after this line all chapters will have leters instead of numbers
 %\input{projectplan}
 %\input{gantt}
-\input{meetinglog}
+\input{tex/meetinglog}
 %\input{progressreviews}
 %\input{worklog}
+
 
 \end{document}

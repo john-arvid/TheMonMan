@@ -1,4 +1,4 @@
-%% 'ntnubachelorthesis.cls' - a LaTeX class for bachelor theses at NTNU
+%% 'other/ntnubachelorthesis.cls' - a LaTeX class for bachelor theses at NTNU
 %%
 %% Copyright (C) 2016 Simon McCallum
 %%
@@ -39,7 +39,7 @@
 \RequirePackage{charter}
 \RequirePackage{euler}
 \RequirePackage{lastpage}
-\RequirePackage{babel}
+%\RequirePackage{babel}
 \RequirePackage{enumitem}
 \RequirePackage[utf8]{inputenc}     % For utf8 encoded .tex files  % For cross references in pdf
 \RequirePackage[pdftex]{graphicx, hyperref} 
@@ -100,8 +100,10 @@
   title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
 }
 
-%temp test
+%Tanke boks
 \usepackage{tcolorbox}
+
+\usepackage[toc]{glossaries}
 
 
 %% MAIN PART
@@ -546,7 +548,7 @@ Use $\backslash$useyear\{<year>\} to set year.
     \let\footnoterule\relax
     \let \footnote \thanks
     \null\vfil
-    \includegraphics[width=200pt]{hovedlogo_eng} \\    
+    \includegraphics[width=200pt]{other/hovedlogo_eng} \\    
     \vskip 75\p@
     \begin{center}%
       {\fontsize{22}{25}\selectfont \thesis@title}%

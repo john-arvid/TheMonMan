@@ -1,0 +1,219 @@
+\chapter{Midlertidig skriv, flyttes senere}
+\label{chap:midlertidig}
+
+% Brukes for å få tankebokser
+\newtcolorbox{tanke}[1]{title=#1}
+
+\section{\gls{dns}}
+
+For å få tilgang til monitoreringstjenesten utenfra vil det bli åpnet nødvendige porter i brannmur. For å gjøre det enklere, med tanke på bytte av ip-adresse vil det brukes et A-record på \gls{dns} server. Denne skal være: themonman.telemix.no
+Da vil alle klienter utenfra nå monitoreringsserver på themonman.telemix.no, og alle klienter internt når det fra themonman.telemix.local.
+
+
+\section{Portåpning}
+
+Hvis klienter skal ha tilgang utenfra må enkelte porter åpnes i brannmuren, siden vi velger å ha den bak en brannmur.
+Disse portene vil være:
+\begin{itemize}
+    \item Port 80: for \gls{http} (blir redirekted til \gls{https})
+    \item Port 443: for \gls{https}
+    \item Port 10050: for zabbix passive agent
+    \item Port 10051: for zabbix aktiv agent
+\end{itemize}
+
+
+\section{SMS}
+
+For å gi beskjed til ansvarlige må det sendes sms, epost og andre tjenester vil ikke være like responsivt.
+For å få Zabbix til å sende sms må Telemix betale for en tjeneste der et gls{api} kan brukes. Da kan Zabbix bruke et script for å sende ut sms til relevante personer.
+SMS vil bare bli brukt for kritiske beskjeder.
+Nexmo.com er en mulig tjeneste, hvis ikke Telemix som Telenor-forhandler har et annet alternativ.
+
+Ref samtale over epost, Telemix ønsker en tjeneste de kan bruke til andre utsendelser også. Nexmo støtter bare et enkelt \gls{rest} \gls{api}, og selv om det er mulig å lage en løsning ut av dette er det mer aktuelt å finne en annen tjeneste som har flere muligheter. Da blir det gitt en sms løsning som ikke bare brukes til varsling av monitorering, men kan da brukes av Telemix i flere sammenhenger.
+
+
+
+
+
+\section{Zabbix Server}
+
+Zabbix server blir installert på en virtuell server i Telemix sitt Xen-miljø. Backup og redundans på servernivå vil ikke være aktuelt å implementere, men det må bekreftes hvordan det fungerer.
+
+
+\section{Discovery}
+For å gjøre det litt enklere og få inn hoster kan man bruke discovery, den vil scanne nettverket mellom et gitt intervall. Denne informasjonen kan man da lage “Actions” for, for eksempel å legge til disse nye enhetene som er funnet, eller scanne disse etter mere informasjon, eller “disable” sjekker hvis en vanlig klient ikke svarer på ping lenger (når bruker skrur av maskinen eller tar den med ut).
+
+\begin{tanke}{One-Time Discovery}
+Finne enheter i et nytt nettverk for å få den initielle samlingen av klienter.
+\\
+\\
+"Vil ikke være nødvendig, hvis man skriver en discovery regel godt nokk vil den kunne leve sammen med systemet hele tiden."
+\end{tanke}
+
+\subsection{Switch Discovery}
+For å få monitorert alle switcher som er i nettverket til Telemix må flere aspekter tas hensyn til. 
+\begin{itemize}
+    \item Hvilken form for monitorering skal det være, og hva støttes av switchene 
+        \begin{itemize}
+            \item \gls{snmp} v1, v2c eller v3
+            \item \gls{icmp}
+            \item \gls{ssh}
+            \item Telnet
+        \end{itemize}
+    \item Sikkerhet
+    \item Standarder i forhold til leverandør
+\end{itemize}
+
+\begin{tanke}{Sikkerhet og muligheter}
+    I forhold til sikkerhet rundt monitorering av switcher i nettverk, må man passe på at informasjon som flyter mellom systemene ikke blir tilgjengelig. (Brukernavn, passord, konfigurasjon)
+    Telnet og \gls{snmp} v1/v2c tilbyr ikke noen form for kryptering av data, så alt kan dumpes og leses i klartekst. \gls{snmp} v3 støttes dog ikke av alle switchene i nettverket, og \gls{icmp} gir lite informasjon om enheten.
+    \gls{ssh} støttes heller ikke av alle enhetene så det vil ikke være mulig.
+    
+    "Siden Telemix kjører et eget \gls{vlan} der monitorering foregår er det kun ønskelige klienter på dette nettverket. For å få informasjon fra alle enheter er man nødt til å bruke usikre metoder, men pakke det inn i sikre miljø."
+\end{tanke}
+
+\section{Prioritering av monitorering}
+
+Hva er viktigst å få monitorert, hva må prioriteres først.
+
+\begin{itemize}
+    \item Server
+    \begin{itemize}
+        \item Domene-Server
+        \item \gls{dhcp}-Server
+        \item \gls{dns}-Server
+        \item Epost-Server
+        \item Web-Server
+        \item Lagrings-Server
+    \end{itemize}
+    \item Klienter
+    \begin{itemize}
+        \item Kunder
+        \item Interne
+    \end{itemize}
+    \item Nettverk
+    \begin{itemize}
+        \item Brannmur
+        \item Node-Switcher
+        \item Kjerne-Switcher
+        \item Eksterne-Switcher
+        \item Hoved-linker, trådløse
+        \item Kunde-linker, trådløse
+    \end{itemize}
+    \item Zabbix (Seg selv)
+\end{itemize}
+
+Her må informasjon fra Telemix gis om hva som er viktigst for dem som bedrift. 
+
+\section{Zabbix og Ubiquiti}
+Telemix har mange Ubiquiti enheter som trenger monitorering, de består av linker, switcher og routere. 
+Zabbix Share har en template liggende ute spesifikt for \gls{ubnt} Airfiber. Denne templates burde kunne bygges på og endre for å dekke flere produkter.
+\\\url{https://share.zabbix.com/network_devices/airfiber-radios}
+
+
+\section{Zabbix og PFSense}
+Telemix bruker hovedsaklig PFSense som sin brannmur-løsning. PFSense har som en vanlig brannmur mange forskjellige data som kan hentes inn og monitoreres, både til feilsøking og varsling.
+Siden PFSense er bygd på FreeBSD vil det være muligheter for å eventuelt bruke en PFSense enhet som er Zabbix Proxy.
+
+Zabbix agent install PFSense:
+\begin{enumerate}
+    \item System -> Package Manager -> Available Packages
+    \item Search for zabbix
+    \item Install zabbix agent
+    \item Services -> Zabbix Agent \gls{lts}
+    \item Input data that is needed
+\end{enumerate}
+
+
+La til host i zabbix og la til freebsd template. 
+
+\begin{tanke}{OBS}
+    Man trenger å legge inn riktig ip-adresse og Hostname på Server og Agent. Utenom det vil alt fungere så lenge det ikke er satt restriksjoner på å sende ut data fra Agent.
+\end{tanke}
+
+
+\section{Zabbix og XEN-server}
+Telemix bruker Citrix Xen-server til sitt virtuelle miljø. Disse servere er kritiske å monitorere, blir det noe feil med disse vil alle virtuelle instanser bli påvirket.
+Xen-Server kjører på CentOS, så det vil være mulig å innstallere en zabbix agent på denne, men å installere tredje-parts programvare på en xen-server er ikke anbefalt og vil bryte en hver support.
+Et alternativ vil være å monitorere ved hjelp av \gls{snmp}.
+
+
+
+\section{Metoder for monitorering}
+\gls{icmp}/Ping, for enheter som tillater dette, siden alle nettverksenheter støtter dette [ref], vil det være en enkel sjekk om selve nettverksenheten klarer å motta pakken og svare på denne. Det vil da fortelle at ruten til denne lokasjonen er ok. Siden denne sjekken ikke forteller noe annet kan denne sjekken være en “lavmålssjekk”.
+
+En annen type sjekk vil da være direkte mot en tjeneste på en klient, for eksempel å sjekke om en port er åpen, eller om klienten svarer med forventet informasjon ved sjekk mot en port.
+
+Den mest avanserte metoden for å monitorere vil være å bruke agenter for å få informasjon, da kan man bruke Zabbix sin egen agent på de klienter som støtter denne, eller man kan skrive script som tar seg av sjekker direkte på klienten og gir informasjon tilbake til server.
+
+\subsection{\gls{icmp}/Ping}
+Selv om dette er en veldig enkel sjekk vil den kunne gi god tilbakemelding på når en enhet er tilgjengelig eller ikke. Kan og gi tilbakemelding på om nettverket er overbelastet til denne, eller på denne enheten ved økt svartid. 
+Sjekken vil også kunne gi historikk som kan sammenlignes for å se på en del av strukturen for å finne problemkilder.
+I større komplekse strukturer vil det være aktuelt å ha flere monitoreingsnoder som kan fortelle hvordan svartiden er fra deres ståsted. 
+\begin{tanke}{Eksempel}
+Liten kompleks nettverksstruktur
+    \begin{verbatim}
+              +-----------+
+              | Internett |
+              +-----+-----+
+                    |
+                    |
+                    |
+                +---+----+
+              +-+ Router +--+
+              | +--------+  |
+              |             |
+              |             |
+          +---+--+      +---+--+
+        +-+Switch+------+Switch+-+
+        | +------+      +------+ |
+        |                        |
+        |                        |
++-------+-------+          +-----+--+
+|               |          |        |
+| Zabbix Server |          | Klient |
+|               |          |        |
++---------------+          +--------+
+
+    \end{verbatim}
+    Zabbix pinger alle enheter, Internett vil være en \gls{dns} server eller en nettside. Vanlig svartid på alle enheter vil være 1ms, internett vil være 8ms. Når et problem oppstår og Switch og Klient svarer med 100ms responstid, er det da Switch eller link mellom de to Switchene som er problemet? Opplever Klienten problemer ut mot internett? I et slik tilfelle vil det være aktuelt med en node som monitorerer fra Klienten sin side av nettverket.
+\end{tanke}
+\gls{icmp} vil ikke gi noen form for informasjon om form for belastning på enhetene, om det er mye trafikk eller om pakker blir mistet på en spesifikk port. Den vil heller ikke gi tilbakemelding om helsen til enhetene, for eksempel temperatur og brukt \gls{ram} og lagringsplass.
+
+\section{Oppdeling av moniteringsstruktur}
+For å lage en mest mulig effektiv monitorering av systemene må hver av metodene brukes på et bestemt vis. \gls{icmp} må brukes til alt den kan, så må det gjøres vurdering på \gls{snmp} eller Telnet/\gls{ssh}. 
+Dette for å unngå å bruke avanserte metoder for å sjekke enkel informasjon. Det vil og gjøre det enklere å lage Templates i et hierarki. Men samtidig må duplisert informasjon unngås. 
+
+
+
+\section{Monitorering av Switcher}
+For å monitorere switcher kan det brukes en vanlig \gls{icmp} sjekk, men for å få mer informasjon om tilstand til switchen må det konfigureres for \gls{snmp} på switchen og server må be om informasjon fra denne tjenesten.
+
+
+
+\section{\gls{snmp}}
+\gls{snmp} er en protokoll som har tre forskjellige hovedversjoner, v1, v2 og v3. De nyere versjoner bygger mer på autentisering og verifisering.
+
+
+
+\section{Templates}
+Templates brukes for å gjøre oppsett av monitorering enklere. Lager man en god template trenger man bare å notere klient-navn og klient-ip så vil tjenesten finne ut hva som trengs å monitoreres. Dette vil kreve mye av de som skriver templaten, så det må hele tiden tas vurdering på hvor mye skal automatiseres.
+
+\section{Feilsøking}
+For å feilsøke i Zabbix kan man bruker forskjellige metoder.
+\begin{itemize}
+    \item Kjøre en sjekk manuelt via \gls{cli} og sammenligne opp mot Latest Data
+    \item Øke debug level på Zabbix prossesen og se på logger
+    \item Deaktivere sjekker for å se om de påvirker mottatt data
+    \item Tshark, Terminal Wireshark
+\end{itemize}
+
+Valg av metode for å feilsøke vil variere etter hvilken feil man får, og hvilke tjenester som brukes i den spesifikke sjekken.
+Eksempler vil bli gitt i form av aktuelle problemer som oppsto under oppgaven.
+
+Admin status på port "flapper".
+På flere switcher som ble monitorert som bare støtter \gls{snmp} v2c, gav Zabbix tilbakemelding om porter som gikk opp og ned, selv om disse portene skulle hele tiden være nede. Når en manuell sjekk ble kjørt via \gls{cli} kom det riktig informasjon tilbake. Når alle andre sjekker var deaktiverte på denne hosten kom det riktig informasjon tilbake.
+For å finne eksakte feilkilden ble en og en sjekk slått på for å se når data ble tolket feil.
+Problemet lå i en sjekk som hentet informasjon om \gls{cpu} porten, når denne informasjonen ble hentet samtidig som Admin status, ble Admin status endret.
+Brukte så wireshark til å finne ut hvilke data som gikk mellom server og switch. Feilsøkte så videre og fant at selve switchen melder tilbake en annen verdi når det blir spurt om informasjon på \gls{cpu} porten. Er muligens en bug i firmware, vurderer å legge ut en kort forespørsel på et forum der jeg forklarer problemet og kanskje får tilbakemelding fra noen som har opplevd det samme.
+
